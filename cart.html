@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Cart</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <header>
     <h1>Your Cart</h1>
     <a href="index.html">← Continue Shopping</a>
@@ -14,24 +16,77 @@
   <main id="cart-container"></main>
 
   <script>
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const container = document.getElementById("cart-container");
 
-    if (cart.length === 0) {
-      container.innerHTML = "<p>Your cart is empty.</p>";
-    } else {
+    function saveCart() {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function renderCart() {
+      container.innerHTML = "";
+
+      if (cart.length === 0) {
+        container.innerHTML = "<p>Your cart is empty.</p>";
+        return;
+      }
+
       let total = 0;
+
       cart.forEach(item => {
         total += item.price * item.quantity;
+
         container.innerHTML += `
           <div class="cart-item">
             <h3>${item.name}</h3>
-            <p>Price: $${item.price} x ${item.quantity}</p>
+            <p>$${item.price} × ${item.quantity}</p>
+            <div class="cart-buttons">
+              <button onclick="decrease(${item.id})">-</button>
+              <button onclick="increase(${item.id})">+</button>
+              <button onclick="removeItem(${item.id})">Remove</button>
+            </div>
           </div>
         `;
       });
-      container.innerHTML += <h2>Total: $${total.toFixed(2)}</h2>;
+
+      container.innerHTML += `
+        <h2>Total: $${total.toFixed(2)}</h2>
+        <button onclick="clearCart()">Clear Cart</button>
+      `;
     }
+
+    function increase(id) {
+      const item = cart.find(p => p.id === id);
+      item.quantity++;
+      saveCart();
+      renderCart();
+    }
+
+    function decrease(id) {
+      const item = cart.find(p => p.id === id);
+      if (item.quantity > 1) {
+        item.quantity--;
+      } else {
+        cart = cart.filter(p => p.id !== id);
+      }
+      saveCart();
+      renderCart();
+    }
+
+    function removeItem(id) {
+      cart = cart.filter(p => p.id !== id);
+      saveCart();
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      saveCart();
+      renderCart();
+    }
+
+    renderCart();
   </script>
+
 </body>
 </html>
