@@ -8,31 +8,46 @@ const products = [
 const productList = document.getElementById("product-list");
 const cartCount = document.getElementById("cart-count");
 
-let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-if (cartCount) cartCount.textContent = cart.length;
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function updateCartCount() {
+  if (cartCount) {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+  }
+}
 
 if (productList) {
   products.forEach(product => {
     const div = document.createElement("div");
     div.className = "product";
+
     div.innerHTML = `
       <h3>${product.name}</h3>
-      <p>Price: $${product.price}</p>
-      <button onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
+      <p>$${product.price}</p>
+      <button>Add to Cart</button>
     `;
+
+    div.querySelector("button").addEventListener("click", () => {
+      addToCart(product);
+    });
+
     productList.appendChild(div);
   });
 }
 
 function addToCart(product) {
   const existing = cart.find(item => item.id === product.id);
+
   if (existing) {
-    existing.quantity += 1;
+    existing.quantity++;
   } else {
-    product.quantity = 1;
-    cart.push(product);
+    cart.push({ ...product, quantity: 1 });
   }
+
   localStorage.setItem("cart", JSON.stringify(cart));
-  if (cartCount) cartCount.textContent = cart.length;
+  updateCartCount();
   alert("Added to cart!");
 }
+
+updateCartCount();
